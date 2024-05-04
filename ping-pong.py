@@ -1,5 +1,21 @@
 from pygame import *
 font.init()
+
+def section(player,pong):
+    w=player.rect.bottom-player.rect.y
+    if pong.rect.centery<=player.rect.y+w*2/9:
+        return -40
+    elif player.rect.y+w*2/9<pong.rect.centery<=player.rect.y+w*4/9:
+        return -20
+    elif player.rect.y+w*4/9<pong.rect.centery<=player.rect.y+w*5/9:
+        return 0
+    elif player.rect.y+w*5/9<pong.rect.centery<=player.rect.y+w*7/9:
+        return 20
+    elif player.rect.y+w*7/9<pong.rect.centery<=player.rect.y+w:
+        return 40
+
+    
+
 class Sprite_game(sprite.Sprite):
     def __init__(self,play_image,speed,play_x,play_y,x,y):
         super().__init__()
@@ -42,20 +58,62 @@ class Button():
         return self.rect.collidepoint(x,y)
 
 class Ball(Sprite_game):
-    def __init__(self,play_image,play_x,play_y,x,y, speed_x, speed_y):
+    def __init__(self,play_image,play_x,play_y,x,y, speed_x, speed_y,k):
         super().__init__(play_image,speed_x,play_x,play_y,x,y)
         self.speed_x=speed_x
         self.speed_y=speed_y
+        self.k=k
     def update(self):
         self.rect.x+=self.speed_x
         self.rect.y+=self.speed_y
-        if sprite.collide_rect(ball,player1) or sprite.collide_rect(player2,ball):
-            self.speed_x*=-1
+        if sprite.collide_rect(ball,player1):
+            degrees=section(player1,ball)
+            if degrees==-40:
+                self.speed_x=3*self.k
+                self.speed_y=-3
+            elif degrees==-20:
+                self.speed_x=3*self.k
+                self.speed_y=-2
+            elif degrees==20:
+                self.speed_x=3*self.k
+                self.speed_y=2
+            elif degrees==40:
+                self.speed_x=3*self.k
+                self.speed_y=3
+            elif degrees==0:
+                self.speed_x=5*self.k
+                self.speed_y=0
+            if self.k<1.3:
+                self.k+=0.01    
         if self.rect.y<=1:
             self.speed_y*=-1
-        if self.rect.y>=450:
+            self.speed_x*=self.k
+            if self.k<1.3:
+                self.k+=0.01 
+        if self.rect.y>=465:
             self.speed_y*=-1
-
+            self.speed_x*=self.k
+            if self.k<1.3:
+                self.k+=0.01    
+        if sprite.collide_rect(player2,ball):
+            degrees=section(player2,ball)
+            if degrees==-40:
+                self.speed_x=-3*self.k
+                self.speed_y=-3
+            elif degrees==-20:
+                self.speed_x=-3*self.k
+                self.speed_y=-2
+            elif degrees==20:
+                self.speed_x=-3*self.k
+                self.speed_y=2
+            elif degrees==40:
+                self.speed_x=-3*self.k
+                self.speed_y=3
+            elif degrees==0:
+                self.speed_x=-5*self.k
+                self.speed_y=0
+            if self.k<1.3:
+                self.k+=0.01    
 
 
 win=display.set_mode((700,500))
@@ -70,7 +128,7 @@ b2=Button(300,280,160,60,280,270,'Выход')
 b3=Button(260,200,250,60,240,190,'Перезапуск')
 player1=Player('левая ракетка.png',5,10,215,20,100)
 player2=Player('правая ракетка.png',5,650,215,20,100)
-ball=Ball('мяч.png',300,200,50,50,2,2)
+ball=Ball('мяч.png',300,200,35,35,2,2,1)
 speed_x=ball.speed
 speed_y=ball.speed
 font1=font.SysFont('Arial',25)
@@ -79,6 +137,8 @@ lose1=font2.render('PLAYER 1 LOSE!',True,(255,0,0))
 lose2=font2.render('PLAYER 2 LOSE!',True,(255,0,0))
 l1=0
 l2=0
+
+
 
 while game:
     for e in event.get():
@@ -108,6 +168,7 @@ while game:
                 player2.rect.y=215
                 ball.speed_x=2
                 ball.speed_y=2
+                ball.k=1
 
 
     if finish!=False:
@@ -128,6 +189,7 @@ while game:
             player2.rect.y=215
             ball.speed_x=2
             ball.speed_y=2
+            ball.k=1
         if ball.rect.x>=650:
             l2+=1
             ball.rect.x=300
@@ -136,6 +198,7 @@ while game:
             player2.rect.y=215
             ball.speed_x=2
             ball.speed_y=2
+            ball.k=1
 
         if l1>=5:
             win.blit(lose1,(10,200))
