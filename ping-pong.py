@@ -1,4 +1,5 @@
 from pygame import *
+from time import time as timer
 font.init()
 
 def section(player,pong):
@@ -13,6 +14,23 @@ def section(player,pong):
         return 20
     elif player.rect.y+w*7/9<pong.rect.centery<=player.rect.y+w:
         return 40
+    
+def winna(point1, point2):
+    if point1==11 and point2<=9:
+        return 'win2'
+    if point2==11 and point1<=9:
+        return 'win1'
+    elif point1>=10 and point2>=10:
+        if point1==point2+2:
+            return 'win2'
+        if point2==point1+2:
+            return 'win1'
+
+def timers(t):
+    if timer()-t<60:
+        return '00:'+str(round(timer()-t))
+
+
 
     
 
@@ -132,11 +150,17 @@ ball=Ball('мяч.png',300,200,35,35,2,2,1)
 speed_x=ball.speed
 speed_y=ball.speed
 font1=font.SysFont('Arial',25)
-font2=font.SysFont('Arial',70)
-lose1=font2.render('PLAYER 1 LOSE!',True,(255,0,0))
-lose2=font2.render('PLAYER 2 LOSE!',True,(255,0,0))
+font2=font.SysFont('Arial',58)
+lose_round1=font2.render('Player 1 lost the round',True,(255,0,0))
+lose_round2=font2.render('Player 2 lost the round',True,(255,0,0))
+lose_game1=font2.render('Player 1 lost the game',True,(255,0,0))
+lose_game2=font2.render('Player 2 lost the game',True,(255,0,0))
 l1=0
 l2=0
+rounds=3
+rou1=0
+rou2=0
+tim1=timer()
 
 
 
@@ -169,6 +193,9 @@ while game:
                 ball.speed_x=2
                 ball.speed_y=2
                 ball.k=1
+                tim1=timer()
+                rou1=0
+                rou2=0
 
 
     if finish!=False:
@@ -200,19 +227,56 @@ while game:
             ball.speed_y=2
             ball.k=1
 
-        if l1>=5:
-            win.blit(lose1,(10,200))
-            finish=False
-        if l2>=5:
-            win.blit(lose2,(10,200))
-            finish=False
+        ad=winna(l1,l2)
+        if ad=='win1':
+            #win.blit(lose_round2,(40,200))
+            l1=0
+            l2=0
+            finish=True
+            ball.rect.x=300
+            ball.rect.y=200
+            player1.rect.y=215
+            player2.rect.y=215
+            ball.speed_x=2
+            ball.speed_y=2
+            ball.k=1
+            tim1=timer()
+            if rou1<2:
+                rou1+=1
+            if rou1==2:
+                win.blit(lose_game2,(40,200))
+                finish=False
+
+        elif ad=='win2':
+            #win.blit(lose_round1,(40,200))
+            l1=0
+            l2=0
+            finish=True
+            ball.rect.x=300
+            ball.rect.y=200
+            player1.rect.y=215
+            player2.rect.y=215
+            ball.speed_x=2
+            ball.speed_y=2
+            ball.k=1
+            tim1=timer()
+            if rou2<2:
+                rou2+=1
+            if rou2==2:
+                win.blit(lose_game1,(40,200))
+                finish=False
+        
 
 
-        p1=font1.render('Пропущено:'+str(l1),True,(255,255,255))
-        p2=font1.render('Пропущено:'+str(l2),True,(255,255,255))
-        win.blit(p1,(10,20))
-        win.blit(p2,(535,20))
+        p1=font1.render('Счёт: '+str(l2)+'-'+str(l1),True,(255,255,255))
+        p_g1=font1.render('Выиграл игр:'+str(rou1),True,(255,255,255))
+        p_g2=font1.render('Выиграл игр:'+str(rou2),True,(255,255,255))
+        tim=font1.render(timers(tim1),True,(255,255,255))
 
+        win.blit(p1,(280,20))
+        win.blit(p_g1,(10,20))
+        win.blit(p_g2,(500,20))
+        win.blit(tim,(320,60))        
 
         clock.tick(FPS)
         display.update()
