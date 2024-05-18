@@ -1,6 +1,9 @@
 from pygame import *
 from time import time as timer
 font.init()
+from random import randint
+
+rect=sprite.Group()
 
 def section(player,pong):
     w=player.rect.bottom-player.rect.y
@@ -14,6 +17,8 @@ def section(player,pong):
         return 20
     elif player.rect.y+w*7/9<pong.rect.centery<=player.rect.y+w:
         return 40
+
+
     
 def winna(point1, point2):
     if point1==11 and point2<=9:
@@ -46,6 +51,9 @@ class Sprite_game(sprite.Sprite):
         win.blit(self.image,(self.rect.x,self.rect.y))
 
 class Player(Sprite_game):
+    def __init__(self,play_image,speed,play_x,play_y,x,y,power):
+        super().__init__(play_image,speed,play_x,play_y,x,y)
+        self.power=power
     def update1(self):
         key_pres=key.get_pressed()
         if key_pres[K_w] and self.rect.y>=0:
@@ -86,7 +94,11 @@ class Ball(Sprite_game):
         self.rect.y+=self.speed_y
         if sprite.collide_rect(ball,player1):
             degrees=section(player1,ball)
-            if degrees==-40:
+            if player1.power:
+                self.speed_x=randint(7,10)
+                self.speed_y=randint(-9,9) 
+                player1.power=False
+            elif degrees==-40:
                 self.speed_x=3*self.k
                 self.speed_y=-3
             elif degrees==-20:
@@ -115,7 +127,11 @@ class Ball(Sprite_game):
                 self.k+=0.01    
         if sprite.collide_rect(player2,ball):
             degrees=section(player2,ball)
-            if degrees==-40:
+            if player2.power:
+                self.speed_x=randint(-10,-7)
+                self.speed_y=randint(-9,9) 
+                player2.power=False
+            elif degrees==-40:
                 self.speed_x=-3*self.k
                 self.speed_y=-3
             elif degrees==-20:
@@ -144,9 +160,11 @@ finish=True
 b1=Button(250,120,260,60,230,110,'Продолжить')
 b2=Button(300,280,160,60,280,270,'Выход')
 b3=Button(260,200,250,60,240,190,'Перезапуск')
-player1=Player('левая ракетка.png',5,10,215,20,100)
-player2=Player('правая ракетка.png',5,650,215,20,100)
+player1=Player('левая ракетка.png',5,10,215,20,100,False)
+player2=Player('правая ракетка.png',5,650,215,20,100,False)
 ball=Ball('мяч.png',300,200,35,35,2,2,1)
+for i in range(4):
+    rect.add(Sprite_game('куб.png',0,randint(100,550),randint(0,450),25,25))
 speed_x=ball.speed
 speed_y=ball.speed
 font1=font.SysFont('Arial',25)
@@ -161,6 +179,7 @@ rounds=3
 rou1=0
 rou2=0
 tim1=timer()
+n=0
 
 
 
@@ -196,6 +215,9 @@ while game:
                 tim1=timer()
                 rou1=0
                 rou2=0
+                for i in range(4-len(rect)):
+                    rect.add(Sprite_game('куб.png',0,randint(100,550),randint(0,450),25,25))
+                
 
 
     if finish!=False:
@@ -204,9 +226,26 @@ while game:
         player1.reset()
         player2.reset()
         ball.reset()
+        rect.draw(win)
         ball.update()
         player1.update1()
         player2.update2()
+
+        if sprite.spritecollide(ball,rect,True):
+            p=randint(1,2)
+            if p==1:
+                if ball.speed_x<0:
+                    player2.power=True
+                else:
+                    player1.power=True
+            '''if p==2:
+                if ball.speed_x<0:
+                    player2.y=120
+                else:
+                    player1.y=120'''
+
+
+
 
         if ball.rect.x<=0:
             l1+=1
@@ -217,6 +256,8 @@ while game:
             ball.speed_x=2
             ball.speed_y=2
             ball.k=1
+            for i in range(4-len(rect)):
+                rect.add(Sprite_game('куб.png',0,randint(100,550),randint(0,450),25,25))
         if ball.rect.x>=650:
             l2+=1
             ball.rect.x=300
@@ -226,6 +267,8 @@ while game:
             ball.speed_x=2
             ball.speed_y=2
             ball.k=1
+            for i in range(4-len(rect)):
+                rect.add(Sprite_game('куб.png',0,randint(100,550),randint(0,450),25,25))
 
         ad=winna(l1,l2)
         if ad=='win1':
